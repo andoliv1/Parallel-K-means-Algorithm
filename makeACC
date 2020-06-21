@@ -1,0 +1,24 @@
+# Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
+
+#ACCEL_TYPE=PGI-multicore
+ACCEL_TYPE=PGI-tesla
+#ACCEL_TYPE=PGI
+
+CXX = pgc++ -std=c++11
+CXXFLAGS = -DUSE_DOUBLE
+
+ifeq ($(ACCEL_TYPE),PGI)
+	CXXFLAGS += -fast
+else ifeq ($(ACCEL_TYPE),PGI-tesla)
+	CXXFLAGS += -Minfo=accel -fast -acc -ta=tesla:cc60
+else ifeq ($(ACCEL_TYPE),PGI-multicore)
+	CXXFLAGS += -Minfo=accel -fast -acc -ta=multicore
+endif
+
+acc_kmeans: kmeans.cpp makeACC
+	$(CXX) $(CXXFLAGS) kmeans.cpp  -o $@ 
+
+.PHONY: clean
+
+clean:
+	rm -f acc_kmeans.o acc_kmeans
